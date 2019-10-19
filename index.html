@@ -1,5 +1,111 @@
+<!DOCTYPE html>
 <html>
-<body>
-Hello World!
-</body>
+    <head>
+        <style>
+            body {
+                overscroll-behavior-y:none;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+            }
+            #game_canvas {
+                display: block;
+            }
+        </style>
+    </head>
+    <script src="scripts/planet.js"></script>
+    <script src="scripts/asteroid.js"></script>
+    <script src="scripts/vec2D.js"></script>
+    <script src="scripts/scene.js"></script>
+    <script src="scripts/controller.js"></script>
+    <script src="scripts/stopwatch.js"></script>
+    <script>
+        function loadImage(src) {
+            let image = new Image();
+            image.addEventListener("load", function() {}, false);
+            image.src = src;
+
+            return image;
+        }
+
+        function startup()
+        {
+            canvas = window.document.querySelector("#game_canvas");
+            canvas.width =  window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            ctx = canvas.getContext("2d");
+
+            moonImage = loadImage("assets/proto/moon.png");
+            earthImage = loadImage("assets/proto/earth.png");
+            universeImage = loadImage("assets/proto/milky-way.jpg");
+            asteroidImage = loadImage("assets/proto/asteroid.png");
+
+            ships = new Array(
+                new asteroid(Math.random()*canvas.width/2, Math.random()*canvas.height,  0.2,  0.1,  300, 15, asteroidImage, canvas, ctx),
+                new asteroid(Math.random()*canvas.width/2, Math.random()*canvas.height, -0.12, 0.18, 300, 15, asteroidImage, canvas, ctx),
+                new asteroid(Math.random()*canvas.width/2, Math.random()*canvas.height,  0.1,  0.2,  300, 15, asteroidImage, canvas, ctx),
+                new asteroid(Math.random()*canvas.width/2, Math.random()*canvas.height, -0.18, 0.12, 300, 15, asteroidImage, canvas, ctx),
+                new asteroid(Math.random()*canvas.width/2, Math.random()*canvas.height,  0.2,  0.1,  300, 15, asteroidImage, canvas, ctx),
+                new asteroid(Math.random()*canvas.width/2, Math.random()*canvas.height, -0.12, 0.18, 300, 15, asteroidImage, canvas, ctx),
+                new asteroid(Math.random()*canvas.width/2, Math.random()*canvas.height,  0.1,  0.2,  300, 15, asteroidImage, canvas, ctx),
+                new asteroid(Math.random()*canvas.width/2, Math.random()*canvas.height, -0.18, 0.12, 300, 15, asteroidImage, canvas, ctx),
+                );
+
+            planets = new Array(
+                new planet(505, 110, 20, 1.0e+8, moonImage, canvas, ctx),
+                new planet(350, 300, 70, 5.0e+7, earthImage, canvas, ctx),
+                new planet(900, 300, 70, 5.0e+7, earthImage, canvas, ctx));
+
+            control = new controller(startup);
+            window.document.addEventListener("keydown", event => { control.keyDownEvent(event);}, false);
+            window.document.addEventListener("keyup", event => {control.keyUpEvent(event);}, false);
+
+            scene1 = new scene(ships, planets, control, ctx, stopwatch);
+
+
+
+            console.log("Starting up");
+
+            // starting game loop
+            window.requestAnimationFrame(gameloop);
+        }
+
+        function gameloop(timestamp)
+        {
+            if(!scene1.gameOver && !scene1.finished)
+                window.requestAnimationFrame(gameloop);
+            else
+                control.waitGameRestart();
+
+            let elapsed = timestamp - lastRender;
+            lastRender = timestamp;
+            
+            scene1.update(elapsed);
+            scene1.draw();
+        }
+
+        var lastRender = performance.now();
+        var ships;
+        var planets;
+        var scene1;
+        var canvas;
+        var ctx;
+        var control;
+
+        var moonImage;
+        var earthImage;
+        var universeImage;
+        var asteroidImage;
+
+        window.document.addEventListener("DOMContentLoaded", startup);
+
+
+    </script>
+    <body style="">
+        <canvas id="game_canvas" width="1000" height="720" style="border:1px solid #000000;">
+            </canvas>
+    </body>
 </html>
